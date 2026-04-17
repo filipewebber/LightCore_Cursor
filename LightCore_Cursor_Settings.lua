@@ -7,6 +7,16 @@ local function SizeLabel(value)
     return format("%d px", value)
 end
 
+local function GetTextureOptions()
+    local container = Settings.CreateControlTextContainer()
+    container:Add("ring_8px", "Very Thin")
+    container:Add("ring_12px", "Thin")
+    container:Add("ring_16px", "Medium")
+    container:Add("ring_24px", "Thick")
+    container:Add("ring_32px", "Very Thick")
+    return container:GetData()
+end
+
 local function GetSwatchColor()
     return CreateColor(
         LightCore_CursorDB.colorR or 1,
@@ -61,9 +71,20 @@ EventUtil.ContinueOnAddOnLoaded("LightCore_Cursor", function()
         function(value) LightCore_Cursor.ApplySize(value) end
     )
 
-    local sizeOptions = Settings.CreateSliderOptions(16, 64, 1)
+    local sizeOptions = Settings.CreateSliderOptions(16, 128, 1)
     sizeOptions:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, SizeLabel)
     Settings.CreateSlider(category, sizeSetting, sizeOptions, "Size of the cursor ring in pixels.")
+
+    local textureSetting = Settings.RegisterProxySetting(
+        category,
+        "LIGHTCORE_CURSOR_TEXTURE",
+        Settings.VarType.String,
+        "Cursor Texture",
+        LightCore_Cursor.DEFAULT_TEXTURE,
+        function() return LightCore_CursorDB.texture or LightCore_Cursor.DEFAULT_TEXTURE end,
+        function(value) LightCore_Cursor.ApplyTexture(value) end
+    )
+    Settings.CreateDropdown(category, textureSetting, GetTextureOptions, "Choose which ring texture to display.")
 
     local useClassColorSetting = Settings.RegisterProxySetting(
         category,

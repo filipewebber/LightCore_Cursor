@@ -5,7 +5,15 @@ LightCore_CursorDB = LightCore_CursorDB or {}
 LightCore_Cursor = {}
 
 local DEFAULT_SIZE = 28
-local TEXTURE = "Interface\\AddOns\\LightCore_Cursor\\cursor_ring"
+local DEFAULT_TEXTURE = "ring_12px"
+local TEXTURE_ROOT = "Interface\\AddOns\\LightCore_Cursor\\assets\\"
+local TEXTURES = {
+    ring_8px = TEXTURE_ROOT .. "ring_8px",
+    ring_12px = TEXTURE_ROOT .. "ring_12px",
+    ring_16px = TEXTURE_ROOT .. "ring_16px",
+    ring_24px = TEXTURE_ROOT .. "ring_24px",
+    ring_32px = TEXTURE_ROOT .. "ring_32px",
+}
 
 local f = CreateFrame("Frame", "LightCore_CursorFrame", UIParent)
 f:SetFrameStrata("TOOLTIP")
@@ -15,7 +23,7 @@ f:EnableMouse(false)
 
 local t = f:CreateTexture(nil, "OVERLAY")
 t:SetAllPoints(f)
-t:SetTexture(TEXTURE)
+t:SetTexture(TEXTURES[DEFAULT_TEXTURE])
 
 local ADDON_NAME = "LightCore_Cursor"
 local SLASH_COMMAND = "/lcc"
@@ -26,6 +34,8 @@ local DEFAULT_COLOR_B = 1
 local inCombat = InCombatLockdown()
 local currentX, currentY, lastX, lastY
 local currentScale, invScale
+
+LightCore_Cursor.DEFAULT_TEXTURE = DEFAULT_TEXTURE
 
 local function GetClassColor()
     local _, class = UnitClass("player")
@@ -39,6 +49,14 @@ end
 
 local function SetRingColor(r, g, b)
     t:SetVertexColor(r, g, b, 1)
+end
+
+local function ResolveTextureKey(textureKey)
+    return TEXTURES[textureKey] and textureKey or DEFAULT_TEXTURE
+end
+
+local function GetTexturePath(textureKey)
+    return TEXTURES[ResolveTextureKey(textureKey)]
 end
 
 local function SetCombatEvents(enabled)
@@ -102,6 +120,8 @@ local function InitializeDefaults()
     if LightCore_CursorDB.combatOnly == nil then
         LightCore_CursorDB.combatOnly = false
     end
+
+    LightCore_CursorDB.texture = ResolveTextureKey(LightCore_CursorDB.texture)
 end
 
 function LightCore_Cursor.ApplySize(size)
@@ -114,6 +134,12 @@ function LightCore_Cursor.ApplyColor(r, g, b)
     LightCore_CursorDB.colorG = g
     LightCore_CursorDB.colorB = b
     SetRingColor(r, g, b)
+end
+
+function LightCore_Cursor.ApplyTexture(textureKey)
+    local resolvedTextureKey = ResolveTextureKey(textureKey)
+    LightCore_CursorDB.texture = resolvedTextureKey
+    t:SetTexture(GetTexturePath(resolvedTextureKey))
 end
 
 function LightCore_Cursor.ApplyClassColor()
@@ -132,6 +158,7 @@ f:SetScript("OnEvent", function(self, event, addonName)
     if event == "ADDON_LOADED" and addonName == ADDON_NAME then
         InitializeDefaults()
         LightCore_Cursor.ApplySize(LightCore_CursorDB.size)
+        LightCore_Cursor.ApplyTexture(LightCore_CursorDB.texture)
 
         if LightCore_CursorDB.useClassColor then
             LightCore_Cursor.ApplyClassColor()
