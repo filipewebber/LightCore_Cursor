@@ -1,4 +1,4 @@
-## Interface: 120000, 120001
+## Interface: 120005, 120000, 120001
 ## Title: LightCore Cursor
 ## Notes: Ring icon on the mouse cursor.
 ## Author: LightCore
